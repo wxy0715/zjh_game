@@ -1,12 +1,15 @@
 package com.zjh.config;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.interceptor.SaInterceptor;
+import cn.dev33.satoken.router.SaHttpMethod;
+import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
+//@Configuration
 public class SaTokenConfigure implements WebMvcConfigurer {
     // 注册拦截器
     @Override
@@ -14,6 +17,14 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         // 注册 Sa-Token 拦截器，校验规则为 StpUtil.checkLogin() 登录校验。
         registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
                 .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/doc.html",
+                        "/doc.html*",
+                        "/webjars/**",
+                        "/img.icons/**",
+                        "/swagger-resources/**",
+                        "/**/v2/api-docs"
+                )
                 .excludePathPatterns("/user/login");
     }
 }
