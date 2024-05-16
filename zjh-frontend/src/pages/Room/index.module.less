@@ -1,0 +1,100 @@
+.roomWrapper {
+  header {
+    height: 56px;
+    background: rgba(100, 100, 100, 0.3);
+    display: flex;
+    box-sizing: border-box;
+    padding: 0 20px;
+    align-items: center;
+    justify-content: space-between;
+    p {
+      margin-bottom: 0;
+    }
+  }
+  main {
+    width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    height: calc(100vh - 56px);
+    .desktop {
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: rgba(#58bc58, 0.4);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .center {
+      width: 0;
+      height: 0;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .userCard {
+      width: 160px;
+      height: 350px;
+      // border: 2px solid salmon;
+      text-align: center;
+      position: absolute;
+      transform-origin: 50% 100%;
+      margin-left: -80px;
+      box-sizing: border-box;
+      padding-top: 10px;
+      > div,
+      > p {
+        transform: rotate(180deg);
+        &.name {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1890ff;
+        }
+        &.pokerGroup {
+          display: flex;
+          justify-content: center;
+          .poker {
+            width: 40px;
+            height: 56px;
+            border: 1px solid rgba(100, 100, 100, 0.3);
+            border-radius: 4px;
+            position: relative;
+            &.pokerRed {
+              color: red;
+            }
+            &:nth-child(2) {
+              margin: 0 5px;
+            }
+            .type {
+              position: absolute;
+              line-height: 12px;
+              right: 2px;
+              top: 2px;
+            }
+            .number {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              font-size: 16px;
+            }
+          }
+        }
+      }
+      .btnGroup {
+        display: flex;
+        justify-content: space-between;
+        padding-bottom: 10px;
+      }
+    }
+    .jackpot {
+      position: absolute;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+}
