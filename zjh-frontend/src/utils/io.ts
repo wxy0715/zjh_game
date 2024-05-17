@@ -34,6 +34,13 @@ socket.on('leaveRoom', () => {
   history!.replace('/');
 });
 
+socket.on('removeUserFromRoom', ({id,username}) => {
+  if (username === store.getState().user.userInfo.username) {
+    message.warn('您已被移除房间');
+    history!.replace('/');
+  }
+});
+
 socket.on('backToRoom', ({ id, roomInfo }) => {
   roomDispatchers.setRoomInfo(roomInfo);
   history!.push(`/room?id=${id}`);

@@ -8,7 +8,7 @@ import store from '@/store';
 import { socket } from '@/utils/io';
 import { useEffect, useState } from 'react';
 
-import { useRequest } from 'ice';
+import { useRequest} from 'ice';
 import { formatPoker } from '@/utils/formatPoker';
 
 import ScoreList from './components/ScoreList';
@@ -55,6 +55,10 @@ function Room({ history }) {
   const [comparePlayerList, setComparePlayerList] = useState<any>();
   const [comparePlayer, setComparePlayer] = useState('');
   const [poker, setPoker] = useState<any>();
+
+  if (Object.keys(room.roomInfo).length === 0) {
+    history!.replace('/');
+  }
 
   // 房间主体
   const {
@@ -183,6 +187,7 @@ function Room({ history }) {
    * 状态 是否准备,是否看牌,是否出局
    */
   const pokerContent = (item: IUser, index: number) => {
+    // 待准备
     if (!item.ready) {
       return (
         <>
@@ -200,18 +205,66 @@ function Room({ history }) {
               </Button>
             </div>
           )}
+          {username === master && item.name !== master && (
+            <div style={{ marginTop: 10, marginBottom: 10 }}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  socket.emit('removeUserFromRoom', { id: roomId, username:item.name });
+                }}
+              >
+                移除
+              </Button>
+            </div>
+          )}
         </>
       );
     }
+
+    // 取消准备
     if (item.ready && !start) {
-      return <p>已准备...</p>;
+      return (
+        <>
+          {!start && room.lastPokers.length > 0 && pokerListContent(formatPoker(room.lastPokers[index]))}
+          {item.name === username && (
+            <div style={{ marginTop: 10, marginBottom: 10 }}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  socket.emit('offReady', { id: roomId, username });
+                }}
+              >
+                取消准备
+              </Button>
+            </div>
+          )}
+          {username === master && item.name !== master && (
+            <div style={{ marginTop: 10, marginBottom: 10 }}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  socket.emit('removeUserFromRoom', { id: roomId, username:item.name });
+                }}
+              >
+                移除
+              </Button>
+            </div>
+          )}
+        </>
+      );
     }
+
+    // 已弃牌
     if (item.giveUp) {
       return <p>已弃牌...</p>;
     }
+
+    // 已出局
     if (item.out) {
       return <p>已出局...</p>;
     }
+
+    // 未看牌
     if (start && !item.watched && item.ready) {
       return (
         <>
@@ -229,6 +282,8 @@ function Room({ history }) {
         </p>
       );
     }
+
+    // 发言且看牌
     if (item.name === username && item.watched && poker) {
       return (
         <>

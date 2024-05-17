@@ -197,6 +197,27 @@ function ioListen(io) {
       infoData.onlineUsers[userIndex].roomId = null;
     });
 
+    /**
+     * 移除用户
+     */
+    socket.on("removeUserFromRoom", ({ id, username }) => {
+      const { idx, userIdx } = getIndex({ id, username });
+      socket.leave(id);
+      infoData.publicRooms[idx].user.splice(userIdx, 1);
+      if (infoData.publicRooms[idx].user.length === 0) {
+        infoData.publicRooms.splice(idx, 1);
+      } else {
+        socket.server.in(id).emit("update", infoData.publicRooms[idx]);
+        socket.server.in(id).emit("removeUserFromRoom", {id,username});
+      }
+
+      const userIndex = infoData.onlineUsers.findIndex(
+          (item) => item.username === username
+      );
+      infoData.onlineUsers[userIndex].roomId = null;
+    });
+
+
     socket.on("destroyRoom", ({ id }) => {
       const idx = infoData.publicRooms.findIndex((item) => item.id === id);
       console.log("destroy", id, idx, infoData.publicRooms);
