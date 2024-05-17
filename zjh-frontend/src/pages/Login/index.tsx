@@ -50,15 +50,8 @@ const Index = () => {
     <div className={style.loginWrapper}>
       <div className={style.formWrapper}>
         <h1 className={style.title}>
-          <img
-            src="https://github.githubassets.com/images/modules/logos_page/Octocat.png"
-            alt=""
-            width="40"
-            height="40"
-          />
           炸金花
         </h1>
-        <h3 className={style.subTitle}>简易版炸金花</h3>
         <Form name="basic" onFinish={onFinish} autoComplete="off">
           <Form.Item name="username" rules={[{ required: true, message: 'Please input your username!' }]}>
             <Input prefix={<UserOutlined />} placeholder="请输入用户名" />

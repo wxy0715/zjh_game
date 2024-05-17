@@ -9,7 +9,7 @@ export default {
   state: {
     userInfo: {
       username: '',
-      token: '',
+      token: ''
     },
   },
   reducers: {

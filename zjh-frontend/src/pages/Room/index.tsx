@@ -12,27 +12,32 @@ import { useRequest } from 'ice';
 import { formatPoker } from '@/utils/formatPoker';
 
 import ScoreList from './components/ScoreList';
-
+/**
+ * 用户结构体
+ */
 export interface IUser {
-  name: string;
-  ready: boolean;
-  pokerData?: any[];
-  watched: boolean;
-  point: number;
-  allPoint: number;
-  giveUp: boolean;
-  currBase: number;
-  out: boolean;
+  name: string;  // 用户名
+  ready: boolean; // 是否准备
+  pokerData?: any[]; // 牌号
+  watched: boolean; // 是否看牌
+  point: number; // 当前局上注
+  allPoint: number; // 总上注
+  giveUp: boolean;  // 是否弃牌
+  currBase: number; // 当前基数
+  out: boolean; // 是否出局
 }
 
+/**
+ * 房间结构体
+ */
 interface IRoomInfo {
-  master: string;
-  roomName: string;
-  user: IUser[];
-  id: string;
-  start: boolean;
-  playerIdx: number;
-  base: number;
+  master: string; // 房主账号
+  roomName: string; // 房间名
+  user: IUser[]; //在房间的用户
+  id: string; // 房间号
+  start: boolean; // 是否已经开始游戏
+  playerIdx: number; // 轮训到的玩家索引
+  base: number; // 基数
   times: number;
 }
 
@@ -51,18 +56,25 @@ function Room({ history }) {
   const [comparePlayer, setComparePlayer] = useState('');
   const [poker, setPoker] = useState<any>();
 
-  const { username } = userModel.userInfo;
+  // 房间主体
   const {
-    master,
-    roomName,
-    user: users = [],
-    id: roomId,
-    start = false,
-    playerIdx = 0,
-    base,
+    master, // 房主账号
+    roomName, // 房间名
+    user: users = [], //在房间的用户
+    id: roomId, // 房间号
+    start = false, // 是否已经开始游戏
+    playerIdx = 0, // 轮训到的玩家索引
+    base, // 基数
   } = room.roomInfo as IRoomInfo;
+
+  // 用户名
+  const { username } = userModel.userInfo;
+  // 自己的位置
   const selfIndex = users.findIndex((item) => item.name === username);
 
+  /**
+   * 计算本局底池
+   */
   const getJackpot = () => {
     let total = 0;
     users.forEach((item) => {
@@ -86,6 +98,9 @@ function Room({ history }) {
     };
   };
 
+  /**
+   * 监听是否开始对局,玩家索引变化,用户名变化,用户变化
+   */
   useEffect(() => {
     if (start) {
       if (username === users[playerIdx].name && !users[playerIdx].watched) {
@@ -96,6 +111,9 @@ function Room({ history }) {
     }
   }, [start, playerIdx, username, users]);
 
+  /**
+   * 监听用户变化,基数变化,玩家索引变化
+   */
   useEffect(() => {
     const list: number[] = [];
     if (users[playerIdx]) {
@@ -229,7 +247,10 @@ function Room({ history }) {
     return '';
   };
 
-  const leaveRoomFn = () => {
+  /**
+   * 离开房间
+   */
+  const leaveRoom = () => {
     if (username === master) {
       socket.emit('destroyRoom', { id: roomId });
     } else {
@@ -239,13 +260,10 @@ function Room({ history }) {
     }
   };
 
-  const leaveRoom = () => {
-    leaveRoomFn();
-  };
-
   const onChangeFill = (e: RadioChangeEvent) => {
     setCurrBase(e.target.value);
   };
+
 
   return (
     <div className={style.roomWrapper}>

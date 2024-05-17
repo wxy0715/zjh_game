@@ -1,5 +1,3 @@
-import { Item } from 'rc-menu';
-
 interface IPoker {
   type: string;
   num: number;

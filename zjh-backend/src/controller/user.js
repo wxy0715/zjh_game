@@ -34,8 +34,7 @@ const login = async (ctx) => {
   } else {
     if (decrypt(password, res.password)) {
       const token = getToken({
-        username,
-        // _id,
+        username
       });
       ctx.body = {
         code: 0,

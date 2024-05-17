@@ -1,18 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Button, Modal, Input } from 'antd';
 import AuthRoute from '@/components/AuthRoute';
-
 import style from './index.module.less';
 import { socket } from '@/utils/io';
 import store from '@/store';
 
-import { request } from 'ice';
+import {request, useHistory} from 'ice';
 
 interface IList {
-  master: string;
-  id: string;
-  roomName: string;
-  user: string[];
+  master: string; // 房主
+  id: string; // 房间号
+  roomName: string; // 房间名
+  user: string[]; // 用户
 }
 
 const Home = () => {
@@ -21,6 +20,8 @@ const Home = () => {
   const [joinModalVisible, setJoinModalVisible] = useState(false);
   const [list, setList] = useState<IList[]>([]);
   const [inputVal, setInputVal] = useState('');
+  const history = useHistory();
+
   useEffect(() => {
     if (user?.userInfo?.username) {
       socket.emit('enterHall', user.userInfo);
@@ -31,6 +32,7 @@ const Home = () => {
     }
     getRoomList();
   }, [user.userInfo]);
+
   return (
     <div className={style.hallWrapper}>
       <h2>大厅</h2>
@@ -40,6 +42,12 @@ const Home = () => {
         </Button>
         <Button type="primary" onClick={() => setJoinModalVisible(true)}>
           加入房间
+        </Button>
+        <Button type="primary" onClick={() => {
+          localStorage.removeItem('zjh_token');
+          history.push("/login");
+        }}>
+          退出登录
         </Button>
       </div>
       <div className={style.roomList}>
