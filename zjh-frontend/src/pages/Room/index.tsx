@@ -1,17 +1,18 @@
 import AuthRoute from '@/components/AuthRoute';
 import cn from 'classnames';
 import style from './index.module.less';
-import { Button, message, Modal, Radio, Select } from 'antd';
-import type { RadioChangeEvent } from 'antd';
+import type {RadioChangeEvent} from 'antd';
+import {Button, message, Modal, Radio, Select} from 'antd';
 
 import store from '@/store';
-import { socket } from '@/utils/io';
-import { useEffect, useState } from 'react';
+import {socket} from '@/utils/io';
+import {useEffect, useState} from 'react';
 
-import { useRequest} from 'ice';
-import { formatPoker } from '@/utils/formatPoker';
+import {useRequest} from 'ice';
+import {formatPoker} from '@/utils/formatPoker';
 
 import ScoreList from './components/ScoreList';
+
 /**
  * 用户结构体
  */
