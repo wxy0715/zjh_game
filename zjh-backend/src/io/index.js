@@ -244,6 +244,9 @@ function ioListen(io) {
           tempArr[i % len].push(shuffleData[i]);
           i++;
         }
+        for (let tempArrElement of tempArr) {
+          tempArrElement.sort((a, b) => a.num - b.num);
+        }
         infoData.pokerData[id] = tempArr;
         infoData.publicRooms[idx].user.forEach((item) => {
           item.point = -1;

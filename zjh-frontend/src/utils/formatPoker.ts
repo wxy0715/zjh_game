@@ -16,10 +16,6 @@ enum PokerType {
 }
 
 export const formatPoker: IFormatPoker = (poker) => {
-  // 排序
-  poker.sort((a, b) => {
-    return a.num - b.num;
-  });
   return poker.map((item) => {
     let fn: string | number = item.num;
     if (item.num === 14) {
