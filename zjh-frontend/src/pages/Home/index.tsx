@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Modal, Input } from 'antd';
+import {Button, Modal, Input, message} from 'antd';
 import AuthRoute from '@/components/AuthRoute';
 import style from './index.module.less';
 import { socket } from '@/utils/io';
@@ -12,6 +12,7 @@ interface IList {
   id: string; // 房间号
   roomName: string; // 房间名
   user: string[]; // 用户
+  start: boolean; // 是否开始
 }
 
 const Home = () => {
@@ -30,6 +31,7 @@ const Home = () => {
       const { data } = await request('/api/roomList');
       setList(data);
     }
+
     getRoomList();
   }, [user.userInfo]);
 
@@ -40,9 +42,9 @@ const Home = () => {
         <Button type="primary" onClick={() => setCreateModalVisible(true)}>
           创建房间
         </Button>
-        <Button type="primary" onClick={() => setJoinModalVisible(true)}>
+{/*        <Button type="primary" onClick={() => setJoinModalVisible(true)}>
           加入房间
-        </Button>
+        </Button>*/}
         <Button type="primary" onClick={() => {
           localStorage.removeItem('zjh_token');
           history.push("/login");
@@ -61,8 +63,16 @@ const Home = () => {
                 <p>房间号：{item.id}</p>
                 <Button
                   type="primary"
-                  onClick={() => {
-                    socket.emit('joinRoom', { id: item.id, username: user.userInfo.username });
+                  onClick={async () => {
+                    const { data } = await request('/api/roomList');
+                    setList(data);
+                    // 判断list中与item相同的对局是否开始
+                    const isStart = data.some((obj) => obj.id === item.id && obj.start);
+                    if (isStart) {
+                      message.warn('对局进行中，不能加入');
+                    } else {
+                      socket.emit('joinRoom', {id: item.id, username: user.userInfo.username});
+                    }
                   }}
                 >
                   加入
@@ -71,6 +81,7 @@ const Home = () => {
             ))
           : '大厅暂无房间，快去创建一个吧'}
       </div>
+
       <Modal
         title="创建房间"
         visible={createModalVisible}
@@ -82,6 +93,7 @@ const Home = () => {
       >
         <p>是否创建房间？</p>
       </Modal>
+
       <Modal
         title="加入房间"
         visible={joinModalVisible}
