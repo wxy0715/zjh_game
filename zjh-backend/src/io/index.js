@@ -3,8 +3,13 @@ const getUser = require("../utils/getUser");
 const pokerShuffle = require("../utils/shuffle");
 const comparePoker = require("../utils/comparePoker");
 
+/**
+ * 获取房间和用户索引
+ */
 function getIndex({ id, username }) {
+  // 获取房间索引
   const idx = infoData.publicRooms.findIndex((item) => item.id === id);
+  // 获取用户索引
   const userIdx = infoData.publicRooms[idx]?.user?.findIndex(
     (item) => item.name === username
   );
@@ -14,6 +19,9 @@ function getIndex({ id, username }) {
   };
 }
 
+/**
+ * 计算本局底池
+ */
 const getJackpot = (users) => {
   let total = 0;
   users.forEach((item) => {
@@ -27,11 +35,16 @@ function ioListen(io) {
     console.log("socket连接成功。。。");
     global.socket = socket;
 
+    /**
+     * 设置下一位发言玩家
+     * @param idx 房间索引
+     * @param userIdx 用户索引
+     */
     function setPlayerIndex({ idx, userIdx }) {
       const userLength = infoData.publicRooms[idx].user.length;
       let nextIndex = (userIdx + 1) % userLength;
       let nextUser = infoData.publicRooms[idx].user[nextIndex];
-
+      // 排除已经放弃和出局的用户
       while (nextUser.giveUp || nextUser.out) {
         nextIndex = (nextIndex + 1) % userLength;
         nextUser = infoData.publicRooms[idx].user[nextIndex];
@@ -208,7 +221,9 @@ function ioListen(io) {
       if (
         !infoData.publicRooms[idx].user.filter((item) => !item.ready).length
       ) {
+        // 洗牌
         const shuffleData = pokerShuffle();
+        // 房间用户数量
         const len = infoData.publicRooms[idx].user.length;
         let tempArr = [];
         for (let i = 0; i < len; i++) {
@@ -279,6 +294,7 @@ function ioListen(io) {
       checkFn({ idx, userIdx, id });
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     });
+
     socket.on("disconnect", function (reason) {
       console.log("disconnect", reason);
     });

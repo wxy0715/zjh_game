@@ -16,6 +16,9 @@ function generatePoker() {
   return arr;
 }
 
+/**
+ * 洗牌
+ */
 function pokerShuffle() {
   return shuffle(generatePoker());
 }

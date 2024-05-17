@@ -3,7 +3,7 @@
   "buildOnSave": false,
   "compilerOptions": {
     "baseUrl": ".",
-    "outDir": "build",
+    "outDir": "zjh",
     "module": "esnext",
     "target": "es6",
     "jsx": "react-jsx",
@@ -28,5 +28,6 @@
     }
   },
   "include": ["src", ".ice"],
-  "exclude": ["node_modules", "build", "public"]
+  "exclude": ["node_modules",
+    "zjh", "public"]
 }

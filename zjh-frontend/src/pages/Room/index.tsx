@@ -83,6 +83,9 @@ function Room({ history }) {
     return Math.abs(total);
   };
 
+  /**
+   * 看牌
+   */
   const { request: watchPoker } = useRequest(() => ({
     url: '/api/watchPoker',
     data: {
@@ -130,6 +133,9 @@ function Room({ history }) {
     }
   }, [base, playerIdx, users]);
 
+  /**
+   * 加注,弃牌,比牌,开始功能
+   */
   const btnGroupContent = (item: IUser) => {
     return (
       <>
@@ -156,6 +162,7 @@ function Room({ history }) {
             >
               比牌
             </Button>
+
             <Button
               type="primary"
               disabled={item.giveUp}
@@ -173,23 +180,9 @@ function Room({ history }) {
       </>
     );
   };
-
-  const pokerListContent = (pokers) => {
-    return (
-      <div className={style.pokerGroup}>
-        {pokers.map((k, idx) => {
-          return (
-            // eslint-disable-next-line react/no-array-index-key
-            <div className={cn(style.poker, { [style.pokerRed]: k.type === 'H' || k.type === 'D' })} key={idx}>
-              <span className={style.type}>{k.ft}</span>
-              <span className={style.number}>{k.fn}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
+  /**
+   * 状态 是否准备,是否看牌,是否出局
+   */
   const pokerContent = (item: IUser, index: number) => {
     if (!item.ready) {
       return (
@@ -247,6 +240,22 @@ function Room({ history }) {
     return '';
   };
 
+  const pokerListContent = (pokers) => {
+    return (
+      <div className={style.pokerGroup}>
+        {pokers.map((k, idx) => {
+          return (
+            // eslint-disable-next-line react/no-array-index-key
+            <div className={cn(style.poker, { [style.pokerRed]: k.type === 'H' || k.type === 'D' })} key={idx}>
+              <span className={style.type}>{k.ft}</span>
+              <span className={style.number}>{k.fn}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   /**
    * 离开房间
    */
@@ -254,17 +263,25 @@ function Room({ history }) {
     if (username === master) {
       socket.emit('destroyRoom', { id: roomId });
     } else {
+      // 弃牌
+      socket.emit('giveUp', { id: roomId, username });
+      // 退出
       socket.emit('leaveRoom', { id: roomId, username });
       message.warn('您已退出房间');
       history.replace('/');
     }
   };
 
+  /**
+   * 改变当前基数
+   */
   const onChangeFill = (e: RadioChangeEvent) => {
     setCurrBase(e.target.value);
   };
 
-
+  /**
+   * 页面ui组件
+   */
   return (
     <div className={style.roomWrapper}>
       <header>
@@ -305,6 +322,7 @@ function Room({ history }) {
         }}
         onCancel={() => {
           setVisible(false);
+          setFillModalVisible(true)
         }}
       >
         <p>是否看牌</p>
