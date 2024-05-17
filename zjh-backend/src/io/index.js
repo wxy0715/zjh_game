@@ -53,20 +53,22 @@ function ioListen(io) {
     }
 
     function checkFn({ idx, userIdx, id }) {
+      // 还活着的玩家
       const restPlayerList = infoData.publicRooms[idx].user.filter(
         (item) => !item.giveUp && !item.out
       );
+      // 只剩最后一位时
       if (restPlayerList.length === 1) {
         const winnerIndex = infoData.publicRooms[idx].user.findIndex(
           (item) => item.name === restPlayerList[0]?.name
         );
-        const currPoint = getJackpot(infoData.publicRooms[idx].user); // 当局奖池
-
+        // 当局奖池
+        const currPoint = getJackpot(infoData.publicRooms[idx].user);
+        // 重置
         infoData.publicRooms[idx].base = 2;
         infoData.publicRooms[idx].playerIdx = winnerIndex;
         infoData.publicRooms[idx].times += 1;
         infoData.publicRooms[idx].start = false;
-
         infoData.publicRooms[idx].user.forEach((item, i) => {
           item.ready = false;
           const tempPoint = item.point;
@@ -85,16 +87,21 @@ function ioListen(io) {
           winner: restPlayerList[0].name,
           jackpot: currPoint,
         });
-      } else {
+      }
+      // 下一位玩家发言
+      else {
         setPlayerIndex({ idx, userIdx });
       }
     }
 
+    /**
+     * 进入大厅
+     */
     socket.on("enterHall", ({ username }) => {
       const index = infoData.onlineUsers.findIndex(
         (item) => item.username === username
       );
-
+      // 如果在房间里面,则回到房间,否则添加到在线用户里面
       if (index === -1) {
         infoData.onlineUsers.push({ username, id: socket.id, roomId: null });
       } else {
@@ -249,14 +256,23 @@ function ioListen(io) {
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     }
 
+    /**
+     * 准备
+     */
     socket.on("ready", ({ id, username }) => {
       readyFn(true, { id, username });
     });
 
+    /**
+     * 取消准备
+     */
     socket.on("offReady", ({ id, username }) => {
       readyFn(false, { id, username });
     });
 
+    /**
+     * 上注
+     */
     socket.on("fill", ({ currBase, id, username }) => {
       const { idx, userIdx } = getIndex({ id, username });
       const index = infoData.publicRooms[idx].playerIdx;
@@ -268,6 +284,9 @@ function ioListen(io) {
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     });
 
+    /**
+     * 比牌
+     */
     socket.on("compare", ({ id, username, comparePlayer }) => {
       const { idx, userIdx } = getIndex({ id, username });
 
@@ -287,9 +306,11 @@ function ioListen(io) {
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     });
 
+    /**
+     * 弃牌
+     */
     socket.on("giveUp", ({ id, username }) => {
       const { idx, userIdx } = getIndex({ id, username });
-
       infoData.publicRooms[idx].user[userIdx].giveUp = true;
       checkFn({ idx, userIdx, id });
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
