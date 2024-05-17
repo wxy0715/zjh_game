@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "icejs start",
-    "build": "icejs zjh",
+    "build": "icejs build",
     "lint": "npm run eslint && npm run stylelint",
     "eslint": "eslint --cache --ext .js,.jsx,.ts,.tsx ./src",
     "stylelint": "stylelint ./**/*.scss"

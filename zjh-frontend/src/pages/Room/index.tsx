@@ -148,20 +148,21 @@ function Room({ history }) {
               onClick={() => {
                 setFillModalVisible(true);
               }}
-            >
-              加注
-            </Button>
+            >加注</Button>
+
             <Button
               type="primary"
               size="small"
               disabled={item.giveUp || Math.abs(item.point) <= 1}
               onClick={() => {
-                setComparePlayer('');
-                setCompareModalVisible(true);
+                if (comparePlayerList) {
+                  setComparePlayer(comparePlayerList[0]);
+                  setCompareModalVisible(true);
+                } else {
+                  message.warn('当前没有可比牌的玩家');
+                }
               }}
-            >
-              比牌
-            </Button>
+            >比牌</Button>
 
             <Button
               type="primary"
@@ -170,9 +171,7 @@ function Room({ history }) {
               onClick={() => {
                 socket.emit('giveUp', { id: roomId, username });
               }}
-            >
-              弃牌
-            </Button>
+            >弃牌</Button>
           </div>
         ) : (
           <p>考虑中...请等待...</p>
@@ -221,6 +220,7 @@ function Room({ history }) {
         </>
       );
     }
+
     if (item.name !== username && item.watched) {
       return (
         <p>
