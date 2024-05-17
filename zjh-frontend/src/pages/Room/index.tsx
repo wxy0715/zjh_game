@@ -263,8 +263,6 @@ function Room({ history }) {
     if (username === master) {
       socket.emit('destroyRoom', { id: roomId });
     } else {
-      // 弃牌
-      socket.emit('giveUp', { id: roomId, username });
       // 退出
       socket.emit('leaveRoom', { id: roomId, username });
       message.warn('您已退出房间');

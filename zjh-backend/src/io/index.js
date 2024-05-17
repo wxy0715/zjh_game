@@ -187,6 +187,7 @@ function ioListen(io) {
       if (infoData.publicRooms[idx].user.length === 0) {
         infoData.publicRooms.splice(idx, 1);
       } else {
+        checkFn({ idx, userIdx, id });
         socket.server.in(id).emit("update", infoData.publicRooms[idx]);
       }
 
