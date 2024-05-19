@@ -38,6 +38,8 @@ socket.on('removeUserFromRoom', ({id,username}) => {
   if (username === store.getState().user.userInfo.username) {
     message.warn('您已被移除房间');
     history!.replace('/');
+  } else {
+    history!.push(`/room?id=${id}`);
   }
 });
 
