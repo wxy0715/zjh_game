@@ -57,7 +57,7 @@ function Room({ history }) {
   const [comparePlayer, setComparePlayer] = useState('');
   const [poker, setPoker] = useState<any>();
 
-  if (Object.keys(room.roomInfo).length === 0) {
+  if (!room.roomInfo || Object.keys(room.roomInfo).length === 0) {
     history!.replace('/');
   }
 
