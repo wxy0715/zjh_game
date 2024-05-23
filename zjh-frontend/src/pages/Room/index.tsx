@@ -42,7 +42,7 @@ interface IRoomInfo {
   times: number;
 }
 
-const maxFillNum = 10; // 最好偶数
+const maxFillNum = 20; // 最好偶数
 
 function Room({ history }) {
   const [room] = store.useModel('room');
@@ -55,10 +55,13 @@ function Room({ history }) {
   const [compareModalVisible, setCompareModalVisible] = useState(false);
   const [comparePlayerList, setComparePlayerList] = useState<any>();
   const [comparePlayer, setComparePlayer] = useState('');
+  // 使用useState来管理选中的值，默认选中第一个
+  const [selectedValue, setSelectedValue] = useState(1);
   const [poker, setPoker] = useState<any>();
 
   if (!room.roomInfo || Object.keys(room.roomInfo).length === 0) {
     history!.replace('/');
+    debugger
   }
 
   // 房间主体
@@ -135,6 +138,7 @@ function Room({ history }) {
         }
       }
       setFillList(list);
+      setSelectedValue(list[0])
     }
   }, [base, playerIdx, users]);
 
@@ -161,8 +165,12 @@ function Room({ history }) {
               disabled={item.giveUp || Math.abs(item.point) <= 1}
               onClick={() => {
                 if (comparePlayerList) {
-                  setComparePlayer(comparePlayerList[0]);
-                  setCompareModalVisible(true);
+                  if (comparePlayerList.length == 1) {
+                    socket.emit('compare', { id: roomId, username, comparePlayer:comparePlayerList[0] });
+                  } else {
+                    setComparePlayer(comparePlayerList[0]);
+                    setCompareModalVisible(true);
+                  }
                 } else {
                   message.warn('当前没有可比牌的玩家');
                 }
@@ -391,7 +399,7 @@ function Room({ history }) {
           setFillModalVisible(false);
         }}
       >
-        <Radio.Group onChange={onChangeFill}>
+        <Radio.Group onChange={onChangeFill}  value={selectedValue}>
           {fillList.map((item) => {
             return (
               <Radio value={item} key={item}>

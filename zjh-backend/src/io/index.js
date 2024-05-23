@@ -194,7 +194,9 @@ function ioListen(io) {
       const userIndex = infoData.onlineUsers.findIndex(
         (item) => item.username === username
       );
-      infoData.onlineUsers[userIndex].roomId = null;
+      if (infoData.onlineUsers[userIndex].roomId) {
+        infoData.onlineUsers[userIndex].roomId = null;
+      }
     });
 
     /**

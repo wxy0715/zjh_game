@@ -25,7 +25,6 @@ socket.on('gameOver', ({ lastPokers, winner, jackpot }) => {
     content: `恭喜${winner}获得本局胜利，奖池为${jackpot}!`,
     duration: 8,
   });
-
   roomDispatchers.setLastPokers(lastPokers);
 });
 
