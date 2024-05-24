@@ -2,6 +2,7 @@ const userModel = require("../model/userModel");
 const { encrypt, decrypt } = require("../utils/crypt");
 const getToken = require("../utils/token");
 const getUser = require("../utils/getUser");
+const infoData = require("../data");
 
 const login = async (ctx) => {
   const { username, password, register } = ctx.request.body;
@@ -33,6 +34,15 @@ const login = async (ctx) => {
     }
   } else {
     if (decrypt(password, res.password)) {
+      for (let onlineUser of infoData.onlineUsers) {
+        if (onlineUser.username === username) {
+          ctx.body = {
+            code: 1,
+            msg: "该账号已在其他设备登陆",
+          };
+          return;
+        }
+      }
       const token = getToken({
         username
       });

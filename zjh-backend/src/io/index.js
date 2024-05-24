@@ -250,6 +250,17 @@ function ioListen(io) {
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     });
 
+    socket.on("logout", ({ username }) => {
+      console.log("username",username)
+      // 移除在线用户
+      const index = infoData.onlineUsers.findIndex(
+          (item) => item.username === username
+      );
+      if (index !== -1) {
+        infoData.onlineUsers.splice(index, 1);
+      }
+    });
+
     /**
      * 准备/取消准备
      */

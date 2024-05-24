@@ -31,7 +31,6 @@ const Home = () => {
       const { data } = await request('/api/roomList');
       setList(data);
     }
-
     getRoomList();
   }, [user.userInfo]);
 
@@ -47,6 +46,7 @@ const Home = () => {
         </Button>*/}
         <Button type="primary" onClick={() => {
           localStorage.removeItem('zjh_token');
+          socket.emit('logout', {username:user?.userInfo?.username});
           history.push("/login");
         }}>
           退出登录

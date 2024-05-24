@@ -1,4 +1,4 @@
-let onlineUsers = []; // 在线人数
+let onlineUsers = []; // 在线用户
 let publicRooms = []; // 当前房间
 let pokerData = {};
 
