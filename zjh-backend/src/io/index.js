@@ -250,13 +250,24 @@ function ioListen(io) {
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     });
 
+    /**
+     * 准备/取消准备
+     */
     function readyFn(flag, { id, username }) {
       const { idx, userIdx } = getIndex({ id, username });
+      infoData.publicRooms[idx].user[userIdx].ready = flag;
+      socket.server.in(id).emit("update", infoData.publicRooms[idx]);
+    }
 
+    /**
+     * 开始
+     */
+    function start(flag, { id, username }) {
+      const { idx, userIdx } = getIndex({ id, username });
       infoData.publicRooms[idx].user[userIdx].ready = flag;
       // 是否剩余未准备玩家
       if (
-        !infoData.publicRooms[idx].user.filter((item) => !item.ready).length
+          infoData.publicRooms[idx].user.filter((item) => !item.ready).length === 0
       ) {
         // 洗牌
         const shuffleData = pokerShuffle();
@@ -277,14 +288,11 @@ function ioListen(io) {
           tempArrElement.sort((a, b) => a.num - b.num);
         }
         infoData.pokerData[id] = tempArr;
+        // 底注
         infoData.publicRooms[idx].user.forEach((item) => {
           item.point = -1;
         });
-        if (len >= 2) {
-          infoData.publicRooms[idx].start = true;
-        }
-      } else {
-        infoData.publicRooms[idx].start = false;
+        infoData.publicRooms[idx].start = true;
       }
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
     }
@@ -301,6 +309,13 @@ function ioListen(io) {
      */
     socket.on("offReady", ({ id, username }) => {
       readyFn(false, { id, username });
+    });
+
+    /**
+     * 开始
+     */
+    socket.on("start", ({ id, username }) => {
+      start(true, { id, username });
     });
 
     /**
@@ -322,7 +337,6 @@ function ioListen(io) {
      */
     socket.on("compare", ({ id, username, comparePlayer }) => {
       const { idx, userIdx } = getIndex({ id, username });
-
       const comparePlayerIdx = infoData.publicRooms[idx].user.findIndex(
         (item) => item.name === comparePlayer
       );
@@ -331,12 +345,20 @@ function ioListen(io) {
         infoData.pokerData[id][comparePlayerIdx]
       );
       const loserIndex = flag ? comparePlayerIdx : userIdx;
-      infoData.publicRooms[idx].user[loserIndex].out = true;
+      const winIndex = flag ? userIdx : comparePlayerIdx;
 
+      infoData.publicRooms[idx].user[loserIndex].out = true;
       const base = infoData.publicRooms[idx].base;
       infoData.publicRooms[idx].user[userIdx].point -= base;
+      const loserUserName = infoData.publicRooms[idx].user[loserIndex].name;
+      const winUserName = infoData.publicRooms[idx].user[winIndex].name;
+      socket.server.in(id).emit("compareLoser", {
+        winUserName,
+        loserUserName
+      });
       checkFn({ idx, userIdx, id });
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
+
     });
 
     /**

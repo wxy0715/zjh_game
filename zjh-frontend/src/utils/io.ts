@@ -29,16 +29,32 @@ socket.on('gameOver', ({ lastPokers, winner, jackpot }) => {
   roomDispatchers.setLastPokers(lastPokers);
 });
 
+/**
+ * 解散房间
+ */
 socket.on('leaveRoom', () => {
   message.warn('房主已解散房间');
   history!.replace('/');
 });
 
+/**
+ * 移除房间
+ */
 socket.on('removeUserFromRoom', ({id,username}) => {
   if (username === store.getState().user.userInfo.username) {
     message.warn('您已被移除房间');
+    // 更新别的房间用户信息
     socket.emit('removeFromRoom', { id: id, username });
     history!.replace('/');
+  }
+});
+
+/**
+ * 比牌失败者提示
+ */
+socket.on('compareLoser', ({winUserName,loserUserName}) => {
+  if (loserUserName === store.getState().user.userInfo.username) {
+    message.warn('您被'+winUserName+"淘汰");
   }
 });
 

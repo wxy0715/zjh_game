@@ -44,7 +44,7 @@ interface IRoomInfo {
 
 const maxFillNum = 20; // 最好偶数
 
-function Room({ history }) {
+async function Room({history}) {
   const [room] = store.useModel('room');
   const [userModel] = store.useModel('user');
 
@@ -56,7 +56,6 @@ function Room({ history }) {
   const [comparePlayerList, setComparePlayerList] = useState<any>();
   const [comparePlayer, setComparePlayer] = useState('');
   // 使用useState来管理选中的值，默认选中第一个
-  const [selectedValue, setSelectedValue] = useState(1);
   const [poker, setPoker] = useState<any>();
 
   if (!room.roomInfo || Object.keys(room.roomInfo).length === 0) {
@@ -74,11 +73,31 @@ function Room({ history }) {
     base, // 基数
   } = room.roomInfo as IRoomInfo;
 
+  /**
+   * 看牌
+   */
+  const {request: watchPoker} = useRequest(() => ({
+    url: '/api/watchPoker',
+    data: {
+      id: roomId,
+      username,
+    },
+    method: 'POST',
+  }));
+
   // 用户名
-  const { username } = userModel.userInfo;
+  const {username} = userModel.userInfo;
   // 自己的位置
   const selfIndex = users.findIndex((item) => item.name === username);
-
+  // 刷新页面时需要看牌
+  for (const item of users) {
+    if (item.name === username && item.watched) {
+      const {
+        data: {poker: nPoker},
+      } = await watchPoker();
+      setPoker(formatPoker(nPoker));
+    }
+  }
   /**
    * 计算本局底池
    */
@@ -91,16 +110,17 @@ function Room({ history }) {
   };
 
   /**
-   * 看牌
+   * 本人本局总上注
    */
-  const { request: watchPoker } = useRequest(() => ({
-    url: '/api/watchPoker',
-    data: {
-      id: roomId,
-      username,
-    },
-    method: 'POST',
-  }));
+  const getJackpotOwn = () => {
+    let total = 0;
+    users.forEach((item) => {
+      if (item.name === username) {
+        total += item.point;
+      }
+    });
+    return Math.abs(total);
+  };
 
   const getStyle = (idx) => {
     return {
@@ -137,7 +157,6 @@ function Room({ history }) {
         }
       }
       setFillList(list);
-      setSelectedValue(list[0])
     }
   }, [base, playerIdx, users]);
 
@@ -161,11 +180,12 @@ function Room({ history }) {
             <Button
               type="primary"
               size="small"
-              disabled={item.giveUp || Math.abs(item.point) <= 1}
+              //disabled={item.giveUp || Math.abs(item.point) <= 1}
+              disabled={item.giveUp}
               onClick={() => {
                 if (comparePlayerList) {
                   if (comparePlayerList.length == 1) {
-                    socket.emit('compare', { id: roomId, username, comparePlayer:comparePlayerList[0] });
+                    socket.emit('compare', {id: roomId, username, comparePlayer: comparePlayerList[0]});
                   } else {
                     setComparePlayer(comparePlayerList[0]);
                     setCompareModalVisible(true);
@@ -181,7 +201,7 @@ function Room({ history }) {
               disabled={item.giveUp}
               size="small"
               onClick={() => {
-                socket.emit('giveUp', { id: roomId, username });
+                socket.emit('giveUp', {id: roomId, username});
               }}
             >弃牌</Button>
           </div>
@@ -201,24 +221,43 @@ function Room({ history }) {
         <>
           <p>待准备...</p>
           {!start && room.lastPokers.length > 0 && pokerListContent(formatPoker(room.lastPokers[index]))}
-          {item.name === username && (
-            <div style={{ marginTop: 10, marginBottom: 10 }}>
+          {username !== master && item.name === username && (
+            <div style={{marginTop: 10, marginBottom: 10}}>
               <Button
                 type="primary"
                 onClick={() => {
-                  socket.emit('ready', { id: roomId, username });
+                  socket.emit('ready', {id: roomId, username});
                 }}
               >
                 准备
               </Button>
             </div>
           )}
-          {username === master && item.name !== master && (
-            <div style={{ marginTop: 10, marginBottom: 10 }}>
+          {username === master && item.name === master && (
+            <div style={{marginTop: 10, marginBottom: 10}}>
               <Button
                 type="primary"
                 onClick={() => {
-                  socket.emit('removeUserFromRoom', { id: roomId, username:item.name });
+                  // 必须房间内都准备才能开始,排除自己
+                  if (users.length <= 1) {
+                    message.warn('最少需要两位玩家才能进行游戏');
+                  } else if (users.filter((item) => item.ready).length === users.length - 1) {
+                    socket.emit('start', {id: roomId, username});
+                  } else {
+                    message.warn('请等待其他玩家准备');
+                  }
+                }}
+              >
+                开始
+              </Button>
+            </div>
+          )}
+          {username === master && item.name !== master && (
+            <div style={{marginTop: 10, marginBottom: 10}}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  socket.emit('removeUserFromRoom', {id: roomId, username: item.name});
                 }}
               >
                 移除
@@ -235,11 +274,11 @@ function Room({ history }) {
         <>
           {!start && room.lastPokers.length > 0 && pokerListContent(formatPoker(room.lastPokers[index]))}
           {item.name === username && (
-            <div style={{ marginTop: 10, marginBottom: 10 }}>
+            <div style={{marginTop: 10, marginBottom: 10}}>
               <Button
                 type="primary"
                 onClick={() => {
-                  socket.emit('offReady', { id: roomId, username });
+                  socket.emit('offReady', {id: roomId, username});
                 }}
               >
                 取消准备
@@ -247,11 +286,11 @@ function Room({ history }) {
             </div>
           )}
           {username === master && item.name !== master && (
-            <div style={{ marginTop: 10, marginBottom: 10 }}>
+            <div style={{marginTop: 10, marginBottom: 10}}>
               <Button
                 type="primary"
                 onClick={() => {
-                  socket.emit('removeUserFromRoom', { id: roomId, username:item.name });
+                  socket.emit('removeUserFromRoom', {id: roomId, username: item.name});
                 }}
               >
                 移除
@@ -309,7 +348,7 @@ function Room({ history }) {
         {pokers.map((k, idx) => {
           return (
             // eslint-disable-next-line react/no-array-index-key
-            <div className={cn(style.poker, { [style.pokerRed]: k.type === 'H' || k.type === 'D' })} key={idx}>
+            <div className={cn(style.poker, {[style.pokerRed]: k.type === 'H' || k.type === 'D'})} key={idx}>
               <span className={style.type}>{k.ft}</span>
               <span className={style.number}>{k.fn}</span>
             </div>
@@ -324,10 +363,10 @@ function Room({ history }) {
    */
   const leaveRoom = () => {
     if (username === master) {
-      socket.emit('destroyRoom', { id: roomId });
+      socket.emit('destroyRoom', {id: roomId});
     } else {
       // 退出
-      socket.emit('leaveRoom', { id: roomId, username });
+      socket.emit('leaveRoom', {id: roomId, username});
       message.warn('您已退出房间');
       history.replace('/');
     }
@@ -354,7 +393,7 @@ function Room({ history }) {
         </Button>
       </header>
       <main>
-        <div className={style.desktop} />
+        <div className={style.desktop}/>
         <div className={style.center}>
           {users.map((item, idx) => {
             return (
@@ -367,7 +406,8 @@ function Room({ history }) {
           })}
         </div>
         <div className={style.jackpot}>底池：{getJackpot()}</div>
-        <ScoreList users={users} />
+        <div className={style.jackpotOwn}>您共上注：{getJackpotOwn()}</div>
+        <ScoreList users={users}/>
       </main>
       <Modal
         visible={visible}
@@ -376,7 +416,7 @@ function Room({ history }) {
         title="是否看牌"
         onOk={async () => {
           const {
-            data: { poker: nPoker },
+            data: {poker: nPoker},
           } = await watchPoker();
           setPoker(formatPoker(nPoker));
           setVisible(false);
@@ -394,11 +434,11 @@ function Room({ history }) {
         onCancel={() => setFillModalVisible(false)}
         title="下注"
         onOk={() => {
-          socket.emit('fill', { currBase: users[playerIdx].watched ? currBase : currBase! * 2, id: roomId, username });
+          socket.emit('fill', {currBase: users[playerIdx].watched ? currBase : currBase! * 2, id: roomId, username});
           setFillModalVisible(false);
         }}
       >
-        <Radio.Group onChange={onChangeFill}  value={selectedValue}>
+        <Radio.Group onChange={onChangeFill}>
           {fillList.map((item) => {
             return (
               <Radio value={item} key={item}>
@@ -413,13 +453,13 @@ function Room({ history }) {
         visible={compareModalVisible}
         maskClosable={false}
         onOk={() => {
-          socket.emit('compare', { id: roomId, username, comparePlayer });
+          socket.emit('compare', {id: roomId, username, comparePlayer});
           setCompareModalVisible(false);
         }}
         onCancel={() => setCompareModalVisible(false)}
       >
         <Select
-          style={{ width: 470 }}
+          style={{width: 470}}
           value={comparePlayer}
           onChange={(name: string) => {
             setComparePlayer(name);
