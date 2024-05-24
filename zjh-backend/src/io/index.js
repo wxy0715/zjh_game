@@ -180,6 +180,9 @@ function ioListen(io) {
       }
     });
 
+    /**
+     * 解散/自行离开房间
+     */
     socket.on("leaveRoom", ({ id, username }) => {
       const { idx, userIdx } = getIndex({ id, username });
       socket.leave(id);
@@ -190,19 +193,23 @@ function ioListen(io) {
         checkFn({ idx, userIdx, id });
         socket.server.in(id).emit("update", infoData.publicRooms[idx]);
       }
-
       const userIndex = infoData.onlineUsers.findIndex(
         (item) => item.username === username
       );
-      if (infoData.onlineUsers[userIndex].roomId) {
-        infoData.onlineUsers[userIndex].roomId = null;
-      }
+      infoData.onlineUsers[userIndex].roomId = null;
     });
 
     /**
-     * 移除用户
+     * 发消息给被移除用户客户端
      */
     socket.on("removeUserFromRoom", ({ id, username }) => {
+      socket.server.in(id).emit("removeUserFromRoom", {id,username});
+    });
+
+    /**
+     * 被移除离开房间
+     */
+    socket.on("removeFromRoom", ({ id, username }) => {
       const { idx, userIdx } = getIndex({ id, username });
       socket.leave(id);
       infoData.publicRooms[idx].user.splice(userIdx, 1);
@@ -210,9 +217,7 @@ function ioListen(io) {
         infoData.publicRooms.splice(idx, 1);
       } else {
         socket.server.in(id).emit("update", infoData.publicRooms[idx]);
-        socket.server.in(id).emit("removeUserFromRoom", {id,username});
       }
-
       const userIndex = infoData.onlineUsers.findIndex(
           (item) => item.username === username
       );
@@ -222,17 +227,18 @@ function ioListen(io) {
 
     socket.on("destroyRoom", ({ id }) => {
       const idx = infoData.publicRooms.findIndex((item) => item.id === id);
-      console.log("destroy", id, idx, infoData.publicRooms);
-      infoData.onlineUsers.forEach((item, index) => {
-        infoData.publicRooms[idx].user.forEach(({ name }) => {
-          if (item.username === name) {
-            infoData.onlineUsers[index].roomId = null;
-          }
+      if (idx !== -1) {
+        console.log("destroy", id, idx, infoData.publicRooms);
+        infoData.onlineUsers.forEach((item, index) => {
+          infoData.publicRooms[idx].user.forEach(({ name }) => {
+            if (item.username === name) {
+              infoData.onlineUsers[index].roomId = null;
+            }
+          });
         });
-      });
-
-      infoData.publicRooms.splice(idx, 1);
-      console.log("after...", infoData.publicRooms, infoData.onlineUsers);
+        infoData.publicRooms.splice(idx, 1);
+        console.log("after...", infoData.publicRooms, infoData.onlineUsers);
+      }
       socket.server.in(id).emit("leaveRoom");
       io.socketsLeave(id);
     });

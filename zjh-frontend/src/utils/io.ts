@@ -17,6 +17,7 @@ socket.on('enterRoom', ({ id: roomId, roomInfo }) => {
 });
 
 socket.on('update', (roomInfo) => {
+  console.log("update")
   roomDispatchers.setRoomInfo(roomInfo);
 });
 
@@ -36,13 +37,16 @@ socket.on('leaveRoom', () => {
 socket.on('removeUserFromRoom', ({id,username}) => {
   if (username === store.getState().user.userInfo.username) {
     message.warn('您已被移除房间');
+    socket.emit('removeFromRoom', { id: id, username });
     history!.replace('/');
-  } else {
-    history!.push(`/room?id=${id}`);
   }
 });
 
 socket.on('backToRoom', ({ id, roomInfo }) => {
-  roomDispatchers.setRoomInfo(roomInfo);
-  history!.push(`/room?id=${id}`);
+  if (!roomInfo || Object.keys(roomInfo).length === 0) {
+    socket.emit('destroyRoom', { id: id });
+  } else {
+    roomDispatchers.setRoomInfo(roomInfo);
+    history!.push(`/room?id=${id}`);
+  }
 });

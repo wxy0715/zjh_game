@@ -60,8 +60,7 @@ function Room({ history }) {
   const [poker, setPoker] = useState<any>();
 
   if (!room.roomInfo || Object.keys(room.roomInfo).length === 0) {
-    history!.replace('/');
-    debugger
+    history!.push('/');
   }
 
   // 房间主体
