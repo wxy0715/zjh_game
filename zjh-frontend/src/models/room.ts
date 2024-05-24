@@ -15,6 +15,7 @@ export default {
   state: {
     roomInfo: {},
     lastPokers: [],
+    state:String, // 对局状态
   },
   reducers: {
     update(prevState, payload) {
@@ -34,6 +35,11 @@ export default {
     setLastPokers(lastPokers: ILastPokers[]) {
       dispatch.room.update({
         lastPokers,
+      });
+    },
+    setRoomState(state: String) {
+      dispatch.room.update({
+        state,
       });
     },
   }),

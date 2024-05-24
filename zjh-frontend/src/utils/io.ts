@@ -20,6 +20,17 @@ socket.on('update', (roomInfo) => {
   roomDispatchers.setRoomInfo(roomInfo);
 });
 
+socket.on('state', () => {
+  // 获取js随机值uuid
+  const uuid = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+  roomDispatchers.setRoomState(uuid);
+});
+
 socket.on('gameOver', ({ lastPokers, winner, jackpot }) => {
   message.success({
     content: `恭喜${winner}获得本局胜利，奖池为${jackpot}!`,

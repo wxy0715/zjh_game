@@ -62,6 +62,8 @@ function ioListen(io) {
         const winnerIndex = infoData.publicRooms[idx].user.findIndex(
           (item) => item.name === restPlayerList[0]?.name
         );
+        // 当前对局状态
+        const state = infoData.publicRooms[idx].start;
         // 当局奖池
         const currPoint = getJackpot(infoData.publicRooms[idx].user);
         // 重置
@@ -82,16 +84,19 @@ function ioListen(io) {
           item.currBase = 0;
           item.out = false;
         });
-        socket.server.in(id).emit("gameOver", {
-          lastPokers: infoData.pokerData[id],
-          winner: restPlayerList[0].name,
-          jackpot: currPoint,
-        });
+        if (state) {
+          socket.server.in(id).emit("gameOver", {
+            lastPokers: infoData.pokerData[id],
+            winner: restPlayerList[0].name,
+            jackpot: currPoint,
+          });
+        }
       }
       // 下一位玩家发言
       else {
         setPlayerIndex({ idx, userIdx });
       }
+      socket.server.emit("state", {});
     }
 
     /**
@@ -150,6 +155,7 @@ function ioListen(io) {
       );
       infoData.onlineUsers[userIndex].roomId = socket.id;
       socket.emit("enterRoom", { id: socket.id, roomInfo });
+      socket.server.emit("state", {});
     });
 
     socket.on("joinRoom", ({ id, username }) => {
@@ -178,10 +184,11 @@ function ioListen(io) {
       } else {
         socket.emit("enterRoom");
       }
+      socket.server.emit("state", {});
     });
 
     /**
-     * 解散/自行离开房间
+     * 自行离开房间
      */
     socket.on("leaveRoom", ({ id, username }) => {
       const { idx, userIdx } = getIndex({ id, username });
@@ -217,6 +224,7 @@ function ioListen(io) {
         infoData.publicRooms.splice(idx, 1);
       } else {
         socket.server.in(id).emit("update", infoData.publicRooms[idx]);
+        socket.server.emit("state", {});
       }
       const userIndex = infoData.onlineUsers.findIndex(
           (item) => item.username === username
@@ -224,7 +232,9 @@ function ioListen(io) {
       infoData.onlineUsers[userIndex].roomId = null;
     });
 
-
+    /**
+     * 解除房间
+     */
     socket.on("destroyRoom", ({ id }) => {
       const idx = infoData.publicRooms.findIndex((item) => item.id === id);
       if (idx !== -1) {
@@ -240,6 +250,7 @@ function ioListen(io) {
         console.log("after...", infoData.publicRooms, infoData.onlineUsers);
       }
       socket.server.in(id).emit("leaveRoom");
+      socket.server.emit("state", {});
       io.socketsLeave(id);
     });
 
@@ -306,6 +317,7 @@ function ioListen(io) {
         infoData.publicRooms[idx].start = true;
       }
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
+      socket.server.emit("state", {});
     }
 
     /**

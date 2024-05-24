@@ -4,7 +4,7 @@ import room from './models/room';
 
 const store = createStore({
   user,
-  room,
+  room
 });
 
 export default store;

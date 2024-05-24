@@ -58,8 +58,8 @@ function Room({ history }) {
   // 使用useState来管理选中的值，默认选中第一个
   const [poker, setPoker] = useState<any>();
 
-  if (!room.roomInfo || Object.keys(room.roomInfo).length === 0) {
-    history!.push('/');
+  if (!room || !room.roomInfo || Object.keys(room.roomInfo).length === 0) {
+    history!.replace('/');
   }
 
   // 房间主体
@@ -124,10 +124,14 @@ function Room({ history }) {
    * 解决看牌后刷新页面导致丢牌情况
    */
   useEffect(() => {
-    if (users[selfIndex].watched && start) {
-      watchPoker().then(res=>{
-        setPoker(formatPoker(res.data.poker));
-      })
+    try {
+      if (users[selfIndex].watched && start) {
+        watchPoker().then(res=>{
+          setPoker(formatPoker(res.data.poker));
+        })
+      }
+    }catch (error) {
+      console.error('watchPoker错误:', error);
     }
   }, [start]);
 

@@ -14,9 +14,9 @@ interface IList {
   user: string[]; // 用户
   start: boolean; // 是否开始
 }
-
 const Home = () => {
   const [user] = store.useModel('user');
+  const [room] = store.useModel('room');
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [joinModalVisible, setJoinModalVisible] = useState(false);
   const [list, setList] = useState<IList[]>([]);
@@ -32,7 +32,7 @@ const Home = () => {
       setList(data);
     }
     getRoomList();
-  }, [user.userInfo,list]);
+  }, [user.userInfo,room.state]);
 
   return (
     <div className={style.hallWrapper}>
