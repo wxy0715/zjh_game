@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {Button, Modal, Input, message} from 'antd';
+import {Button, Modal, Input} from 'antd';
 import AuthRoute from '@/components/AuthRoute';
 import style from './index.module.less';
 import { socket } from '@/utils/io';
@@ -32,7 +32,7 @@ const Home = () => {
       setList(data);
     }
     getRoomList();
-  }, [user.userInfo]);
+  }, [user.userInfo,list]);
 
   return (
     <div className={style.hallWrapper}>
@@ -63,19 +63,13 @@ const Home = () => {
                 <p>房间号：{item.id}</p>
                 <Button
                   type="primary"
-                  onClick={async () => {
-                    const { data } = await request('/api/roomList');
-                    setList(data);
-                    // 判断list中与item相同的对局是否开始
-                    const isStart = data.some((obj) => obj.id === item.id && obj.start);
-                    if (isStart) {
-                      message.warn('对局进行中，不能加入');
-                    } else {
-                      socket.emit('joinRoom', {id: item.id, username: user.userInfo.username});
-                    }
+                  disabled={item.start}
+                  onClick={() => {
+                    socket.emit('joinRoom', {id: item.id, username: user.userInfo.username});
                   }}
                 >
-                  加入
+
+                  {item.start?"请等待游戏结束":"加入"}
                 </Button>
               </div>
             ))
