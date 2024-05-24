@@ -66,6 +66,9 @@ socket.on('userDown', ({username}) => {
   }
 });
 
+/**
+ * 回到房间
+ */
 socket.on('backToRoom', ({ id, roomInfo }) => {
   if (!roomInfo || Object.keys(roomInfo).length === 0) {
     socket.emit('destroyRoom', { id: id });

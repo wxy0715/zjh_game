@@ -95,7 +95,7 @@ function ioListen(io) {
     }
 
     /**
-     * 进入大厅
+     * 进入大厅,支持重连
      */
     socket.on("enterHall", ({ username }) => {
       const index = infoData.onlineUsers.findIndex(
