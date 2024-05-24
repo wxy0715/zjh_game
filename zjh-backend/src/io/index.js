@@ -350,15 +350,20 @@ function ioListen(io) {
       infoData.publicRooms[idx].user[loserIndex].out = true;
       const base = infoData.publicRooms[idx].base;
       infoData.publicRooms[idx].user[userIdx].point -= base;
-      const loserUserName = infoData.publicRooms[idx].user[loserIndex].name;
-      const winUserName = infoData.publicRooms[idx].user[winIndex].name;
-      socket.server.in(id).emit("compareLoser", {
-        winUserName,
-        loserUserName
-      });
+      // 当最后只剩两位玩家时不提示
+      const restPlayerList = infoData.publicRooms[idx].user.filter(
+          (item) => !item.giveUp && !item.out
+      );
+      if (restPlayerList.length > 2) {
+        const loserUserName = infoData.publicRooms[idx].user[loserIndex].name;
+        const winUserName = infoData.publicRooms[idx].user[winIndex].name;
+        socket.server.in(id).emit("compareLoser", {
+          winUserName,
+          loserUserName
+        });
+      }
       checkFn({ idx, userIdx, id });
       socket.server.in(id).emit("update", infoData.publicRooms[idx]);
-
     });
 
     /**

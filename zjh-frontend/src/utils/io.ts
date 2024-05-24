@@ -17,7 +17,6 @@ socket.on('enterRoom', ({ id: roomId, roomInfo }) => {
 });
 
 socket.on('update', (roomInfo) => {
-  console.log("update")
   roomDispatchers.setRoomInfo(roomInfo);
 });
 
