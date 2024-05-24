@@ -36,11 +36,8 @@ const login = async (ctx) => {
     if (decrypt(password, res.password)) {
       for (let onlineUser of infoData.onlineUsers) {
         if (onlineUser.username === username) {
-          ctx.body = {
-            code: 1,
-            msg: "该账号已在其他设备登陆",
-          };
-          return;
+          // 先发送socket让另外一端掉线
+          socket.server.emit("userDown", {username});
         }
       }
       const token = getToken({

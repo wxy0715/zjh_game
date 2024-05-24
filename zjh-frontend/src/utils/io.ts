@@ -57,6 +57,15 @@ socket.on('compareLoser', ({winUserName,loserUserName}) => {
   }
 });
 
+/**
+ * 被挤下线通知
+ */
+socket.on('userDown', ({username}) => {
+  if (username === store.getState().user.userInfo.username) {
+    localStorage.removeItem('zjh_token');
+  }
+});
+
 socket.on('backToRoom', ({ id, roomInfo }) => {
   if (!roomInfo || Object.keys(roomInfo).length === 0) {
     socket.emit('destroyRoom', { id: id });
