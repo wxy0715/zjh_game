@@ -1,3 +1,5 @@
+娱乐地址:http://8.142.156.127
+
 | 待优化清单                 | 进度  |
 |-----------------------|-----|
 | 增加退出登录功能              | 已完成 |
@@ -19,4 +21,48 @@
 | 玩家退出对局后 得分榜应该保留玩家信息   | ing |
 | 样式优化,适配手机端            |     |
 | 增加计时器,默认20s,不操作则视为弃牌  |     |
+
+# 功能截图
+
+![image-20240527085236420](https://wxy-md.oss-cn-shanghai.aliyuncs.com/image-20240527085236420.png)
+
+![image-20240527123359475](https://wxy-md.oss-cn-shanghai.aliyuncs.com/image-20240527123359475.png)
+
+![image-20240527123530858](https://wxy-md.oss-cn-shanghai.aliyuncs.com/image-20240527123530858.png)
+
+![image-20240527123554289](https://wxy-md.oss-cn-shanghai.aliyuncs.com/image-20240527123554289.png)
+
+![image-20240527123627572](https://wxy-md.oss-cn-shanghai.aliyuncs.com/image-20240527123627572.png)
+
+# Nginx部署配置
+
+```conf
+    server {
+        listen       80;
+        server_name  lcoalhost;
+        location /api/ {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header REMOTE-HOST $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://8.142.156.127:3001;
+        }
+
+        location /socket.io/ {
+            rewrite ^/wsUrl/(.*)$ /$1 break;
+            proxy_pass  http://8.142.156.127:3001;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location / {
+           root 	/usr/share/nginx/html/zjh;
+           try_files $uri $uri/ /index.html;
+           index  index.html;
+        }
+    }
+```
+
+
 
